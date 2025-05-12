@@ -26,7 +26,8 @@ pipeline {
         stage('Analyse SonarQube') {
             steps {
                 withSonarQubeEnv('sonar-token') {
-                    sh 'mvn sonar:sonar -Dsonar.projectKey=bis-sonarqube-project -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=squ_12dc5303a322f735859acd7fab0615ba4c9df7d6'
+                    sh 'mvn sonar:sonar -Dsonar.projectKey=bis-sonarqube-project -Dsonar.host.url=http://192.168.50.4:9000 -Dsonar.login=squ_12dc5303a322f735859acd7fab0615ba4c9df7d6'
+
                 }
             }
         }
