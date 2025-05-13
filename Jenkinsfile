@@ -6,7 +6,7 @@ pipeline {
     }
 
     stages {
-        stage('Cloner le dépôt') {
+        stage('Clone le dépôt') {
             steps {
                 git url: 'https://github.com/yassine5425/PROJECT-JENKINS.git', branch: 'main'
             }
@@ -22,16 +22,10 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
                     withSonarQubeEnv('sonarqube') {
-                        sh '''
-                          tool name: 'SonarScanner'
-                sh """
-                    ${tool 'SonarScanner'}/bin/sonar-scanner \
-                            sonar-scanner \
-                            -Dsonar.projectKey=projet-jenkins \
-                            -Dsonar.sources=. \
-                            -Dsonar.host.url=${SONAR_HOST_URL} \
-                            -Dsonar.login=${SONAR_AUTH_TOKEN}
-                        '''
+                        script {
+                            def scannerHome = tool 'SonarScanner' // Ce nom doit correspondre à l'outil défini dans "Global Tool Configuration"
+                            sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=projet-jenkins -Dsonar.sources=. -Dsonar.host.url=${env.SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN}"
+                        }
                     }
                 }
             }
