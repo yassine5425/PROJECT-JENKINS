@@ -1,4 +1,3 @@
-```groovy
 pipeline {
     agent any
 
@@ -25,16 +24,11 @@ pipeline {
                     withSonarQubeEnv('sonarqube') {
                         script {
                             def scannerHome = tool 'SonarScanner'
-                            // Use environment variable to avoid string interpolation of secrets
-                            withEnv(["SONAR_TOKEN=${SONAR_AUTH_TOKEN}"]) {
-                                sh """
-                                    ${scannerHome}/bin/sonar-scanner \
-                                    -Dsonar.projectKey=projet-jenkins \
-                                    -Dsonar.sources=. \
-                                    -Dsonar.host.url=${SONAR_HOST_URL} \
-                                    -Dsonar.login=\${SONAR_TOKEN}
-                                """
-                            }
+                            sh "${scannerHome}/bin/sonar-scanner \
+                                -Dsonar.projectKey=projet-jenkins \
+                                -Dsonar.sources=. \
+                                -Dsonar.host.url=${env.SONAR_HOST_URL} \
+                                -Dsonar.login=${SONAR_AUTH_TOKEN}"
                         }
                     }
                 }
@@ -57,4 +51,3 @@ pipeline {
         }
     }
 }
-```
