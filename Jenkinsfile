@@ -3,7 +3,8 @@ pipeline {
 
     environment {
         // Remplacez par votre URL SonarQube par son @IP  
-        SONAR_HOST_URL = 'http://192.168.1.148:9000'
+        SONAR_HOST_URL = 'http://192.168.50.4:9000
+'
     }
 
     stages {
