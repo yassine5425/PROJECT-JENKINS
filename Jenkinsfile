@@ -32,30 +32,20 @@ pipeline {
             }
         }
 
-        stage('Debug SonarQube Env') {
-            steps {
-                withSonarQubeEnv('sonarqube') {
-                    sh 'env | grep SONAR' // Log SonarQube environment variables
-                }
-            }
-        }
-
         stage('Analyse SonarQube') {
             steps {
                 withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
-                    withSonarQubeEnv('sonarqube') {
-                        script {
-                            def scannerHome = tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
-                            sh """
-                                ${scannerHome}/bin/sonar-scanner \
-                                -Dsonar.projectKey=projet-jenkins \
-                                -Dsonar.projectName=projet-jenkins \
-                                -Dsonar.sources=. \
-                                -Dsonar.host.url=${SONAR_HOST_URL} \
-                                -Dsonar.login=\${SONAR_AUTH_TOKEN} \
-                                -X
-                            """
-                        }
+                    script {
+                        def scannerHome = tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=projet-jenkins \
+                            -Dsonar.projectName=projet-jenkins \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=${SONAR_HOST_URL} \
+                            -Dsonar.login=\${SONAR_AUTH_TOKEN} \
+                            -X
+                        """
                     }
                 }
             }
