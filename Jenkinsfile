@@ -2,97 +2,52 @@ pipeline {
     agent any
 
     environment {
-        SONAR_HOST_URL = 'http://192.168.50.4:9000'  // URL de ton serveur SonarQube
+        // Remplacez par votre URL SonarQube par son @IP  
+        SONAR_HOST_URL = 'http://192.168.50.4:9000'
     }
 
     stages {
-        stage('Check Prerequisites') {
+        
+        //Clôner le dépôt depuis Github
+        stage('Cloner le dépôt') {
             steps {
-                script {
-                    // Vérifier si Docker est installé et si le daemon Docker fonctionne
-                    sh 'docker --version'   // Vérifier l'installation de Docker
-                    sh 'docker ps'          // Vérifier les permissions Docker
-                    sh 'docker info'        // Vérifier si le daemon Docker fonctionne correctement
-                }
+                git url: ' https://github.com/yassine5425/PROJECT-JENKINS.', branch: 'main'
             }
         }
 
-        stage('Clone le dépôt') {
-            steps {
-                script {
-                    // Cloner le dépôt Git à partir de la branche 'main'
-                    git url: 'https://github.com/yassine5425/PROJECT-JENKINS.git>', branch: 'main'
-                }
-            }
-        }
-
+        //Installer les dépendances de votre application avec l'outil de construction de build maven
         stage('Build Maven') {
             steps {
-                script {
-                    // Construire le projet Maven sans exécuter les tests
-                    sh 'mvn clean install -DskipTests'
-                }
+                sh 'mvn clean install -DskipTests'
             }
         }
 
-        stage('Check SonarQube Connectivity') {
-            steps {
-                script {
-                    // Vérifier si SonarQube est joignable
-                    sh 'curl -I ${SONAR_HOST_URL}'
-                }
-            }
-        }
-
+        //Effectuer une analyse de la qualité de code avec Sonarqube
+        //Créer un projet un projet dans sonarqube
         stage('Analyse SonarQube') {
             steps {
-                script {
-                    // Vérifier la version du scanner SonarQube
-                    timeout(time: 5, unit: 'MINUTES') {
-                        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
-                            def scannerHome = tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
-                            sh """
-                                echo "Workspace contents:"
-                                ls -la
-                                echo "SonarQube Scanner Version:"
-                                ${scannerHome}/bin/sonar-scanner --version
-                                ${scannerHome}/bin/sonar-scanner \
-                                -Dsonar.projectKey=projet-jenkins \
-                                -Dsonar.projectName=projet-jenkins \
-                                -Dsonar.sources=. \
-                                -Dsonar.host.url=${SONAR_HOST_URL} \
-                                -Dsonar.login=\${SONAR_AUTH_TOKEN} \
-                                -X
-                            """
-                        }
-                    }
+                withSonarQubeEnv('sonar-token') {
+                    // Coller le token créé depuis sonarqube project dans la commande de sonar
+                    sh 'mvn sonar:sonar -Dsonar.projectKey= projet-jenkins -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=squ_86eba6dad133818471257654181649e6f2a69781
                 }
             }
         }
 
-        stage('Docker Build and Push') {
+        //Dockériser l'application et faire en sortir une image de l'application avec docker build
+        stage('Docker Build') {
             steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'docker-registry-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        // Login au registre Docker, puis construction et push de l'image
-                        sh '''
-                            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-                            docker build -t app:latest .
-                            docker tag app:latest $DOCKER_USERNAME/app:latest
-                            docker push $DOCKER_USERNAME/app:latest
-                        '''
-                    }
-                }
+                // Specifier un nom pour le build
+                sh 'docker build -t app:latest .'
             }
         }
     }
 
     post {
         success {
-            echo '✅ Pipeline terminé avec succès.'
+            echo 'Pipeline terminé avec succès.'
         }
         failure {
-            echo '❌ Échec du pipeline.'
+            echo 'Échec du pipeline.'
         }
     }
 }
