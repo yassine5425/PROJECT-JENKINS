@@ -3,11 +3,9 @@ pipeline {
 
     environment {
         SONAR_HOST_URL = 'http://192.168.50.4:9000'
-        SONAR_TOKEN = credentials('projet') // Ton ID de token Jenkins
     }
 
     stages {
-
         stage('Cloner le dépôt') {
             steps {
                 git url: 'https://github.com/yassine5425/PROJECT-JENKINS.git', branch: 'main'
@@ -22,13 +20,17 @@ pipeline {
 
         stage('Analyse SonarQube') {
             steps {
-                withSonarQubeEnv('SonarQubeScanner') {
-                    sh """
-                        mvn sonar:sonar \
-                        -Dsonar.projectKey=bis-sonarqube-project \
-                        -Dsonar.host.url=$SONAR_HOST_URL \
-                        -Dsonar.login=$SONAR_TOKEN
-                    """
+                // D'abord le contexte SonarQube
+                withSonarQubeEnv('sonar-token') {
+                    // Puis on récupère le token stocké dans Jenkins
+                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                        sh """
+                            mvn sonar:sonar \
+                            -Dsonar.projectKey=bis-sonarqube-project \
+                            -Dsonar.host.url=$SONAR_HOST_URL \
+                            -Dsonar.login=$SONAR_TOKEN
+                        """
+                    }
                 }
             }
         }
@@ -42,10 +44,10 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline terminé avec succès.'
+            echo '✅ Pipeline terminé avec succès.'
         }
         failure {
-            echo 'Échec du pipeline.'
+            echo '❌ Échec du pipeline.'
         }
     }
 }
