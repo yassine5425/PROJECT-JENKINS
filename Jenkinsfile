@@ -20,11 +20,11 @@ pipeline {
 
         stage('Analyse SonarQube') {
             steps {
-                withCredentials([string(credentialsId: 'sq1', variable: 'SONAR_AUTH_TOKEN')]) {
+                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
                     withSonarQubeEnv('sonarqube') {
                         sh '''
                             sonar-scanner \
-                            -Dsonar.projectKey=bis-sonarqube-project \
+                            -Dsonar.projectKey=projet-jenkins \
                             -Dsonar.sources=. \
                             -Dsonar.host.url=${SONAR_HOST_URL} \
                             -Dsonar.login=${SONAR_AUTH_TOKEN}
@@ -50,4 +50,3 @@ pipeline {
         }
     }
 }
-
