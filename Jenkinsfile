@@ -20,8 +20,8 @@ pipeline {
 
         stage('Analyse SonarQube') {
             steps {
-                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
-                    withSonarQubeEnv('sonar-token') {
+                withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
+                    withSonarQubeEnv('sonarqube') {
                         sh '''
                             sonar-scanner \
                             -Dsonar.projectKey=bis-sonarqube-project \
