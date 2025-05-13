@@ -28,7 +28,7 @@ pipeline {
             steps {
                 withSonarQubeEnv('sonar-token') {
                     // Coller le token créé depuis sonarqube project dans la commande de sonar
-                    sh 'mvn sonar:sonar -Dsonar.projectKey=bis-sonarqube-project -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=squ_12dc5303a322f735859acd7fab0615ba4c9df7d6'
+                   sh 'sonar-scanner -X'
                 }
             }
         }
