@@ -2,41 +2,54 @@ pipeline {
     agent any
 
     environment {
-        SONAR_HOST_URL = 'http://192.168.50.4:9000'
+        SONAR_HOST_URL = 'http://192.168.50.4:9000'  // URL de ton serveur SonarQube
     }
 
     stages {
         stage('Check Prerequisites') {
             steps {
-                sh 'docker --version' // Check Docker installation
-                sh 'docker ps' // Check Docker permissions
-                sh 'docker info' // Check Docker daemon
+                script {
+                    // Vérifier si Docker est installé et si le daemon Docker fonctionne
+                    sh 'docker --version'   // Vérifier l'installation de Docker
+                    sh 'docker ps'          // Vérifier les permissions Docker
+                    sh 'docker info'        // Vérifier si le daemon Docker fonctionne correctement
+                }
             }
         }
 
         stage('Clone le dépôt') {
             steps {
-                git url: 'https://github.com/yassine5425/PROJECT-JENKINS.git', branch: 'main'
+                script {
+                    // Cloner le dépôt Git à partir de la branche 'main'
+                    git url: 'https://<ton-dépôt-git-url>', branch: 'main'
+                }
             }
         }
 
         stage('Build Maven') {
             steps {
-                sh 'mvn clean install -DskipTests'
+                script {
+                    // Construire le projet Maven sans exécuter les tests
+                    sh 'mvn clean install -DskipTests'
+                }
             }
         }
 
         stage('Check SonarQube Connectivity') {
             steps {
-                sh 'curl -I ${SONAR_HOST_URL}' // Verify SonarQube server is reachable
+                script {
+                    // Vérifier si SonarQube est joignable
+                    sh 'curl -I ${SONAR_HOST_URL}'
+                }
             }
         }
 
         stage('Analyse SonarQube') {
             steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
-                        script {
+                script {
+                    // Vérifier la version du scanner SonarQube
+                    timeout(time: 5, unit: 'MINUTES') {
+                        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
                             def scannerHome = tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
                             sh """
                                 echo "Workspace contents:"
@@ -59,13 +72,16 @@ pipeline {
 
         stage('Docker Build and Push') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-registry-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    sh '''
-                        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-                        docker build -t app:latest .
-                        docker tag app:latest $DOCKER_USERNAME/app:latest
-                        docker push $DOCKER_USERNAME/app:latest
-                    '''
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'docker-registry-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        // Login au registre Docker, puis construction et push de l'image
+                        sh '''
+                            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                            docker build -t app:latest .
+                            docker tag app:latest $DOCKER_USERNAME/app:latest
+                            docker push $DOCKER_USERNAME/app:latest
+                        '''
+                    }
                 }
             }
         }
