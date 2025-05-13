@@ -23,6 +23,9 @@ pipeline {
                 withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
                     withSonarQubeEnv('sonarqube') {
                         sh '''
+                          tool name: 'SonarScanner'
+                sh """
+                    ${tool 'SonarScanner'}/bin/sonar-scanner \
                             sonar-scanner \
                             -Dsonar.projectKey=projet-jenkins \
                             -Dsonar.sources=. \
