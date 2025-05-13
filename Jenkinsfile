@@ -34,18 +34,24 @@ pipeline {
 
         stage('Analyse SonarQube') {
             steps {
-                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
-                    script {
-                        def scannerHome = tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
-                        sh """
-                            ${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=projet-jenkins \
-                            -Dsonar.projectName=projet-jenkins \
-                            -Dsonar.sources=. \
-                            -Dsonar.host.url=${SONAR_HOST_URL} \
-                            -Dsonar.login=\${SONAR_AUTH_TOKEN} \
-                            -X
-                        """
+                timeout(time: 5, unit: 'MINUTES') {
+                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
+                        script {
+                            def scannerHome = tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+                            sh """
+                                echo "Workspace contents:"
+                                ls -la
+                                echo "SonarQube Scanner Version:"
+                                ${scannerHome}/bin/sonar-scanner --version
+                                ${scannerHome}/bin/sonar-scanner \
+                                -Dsonar.projectKey=projet-jenkins \
+                                -Dsonar.projectName=projet-jenkins \
+                                -Dsonar.sources=. \
+                                -Dsonar.host.url=${SONAR_HOST_URL} \
+                                -Dsonar.login=\${SONAR_AUTH_TOKEN} \
+                                -X
+                            """
+                        }
                     }
                 }
             }
