@@ -2,41 +2,41 @@ pipeline {
     agent any
 
     environment {
-        SONAR_HOST_URL = 'http://192.168.50.4:9000'
+        // Remplacez par votre URL SonarQube par son @IP  
+        SONAR_HOST_URL = 'http://192.168.1.148:9000'
     }
 
     stages {
+        
+        //Clôner le dépôt depuis Github
         stage('Cloner le dépôt') {
             steps {
-                git url: 'https://github.com/yassine5425/PROJECT-JENKINS.git', branch: 'main'
+                git url: 'https://github.com/MedAmine22/spring-boot-app.git', branch: 'master'
             }
         }
 
+        //Installer les dépendances de votre application avec l'outil de construction de build maven
         stage('Build Maven') {
             steps {
                 sh 'mvn clean install -DskipTests'
             }
         }
 
+        //Effectuer une analyse de la qualité de code avec Sonarqube
+        //Créer un projet un projet dans sonarqube
         stage('Analyse SonarQube') {
             steps {
-                // D'abord le contexte SonarQube
                 withSonarQubeEnv('sonar-token') {
-                    // Puis on récupère le token stocké dans Jenkins
-                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                        sh """
-                            mvn sonar:sonar \
-                            -Dsonar.projectKey=bis-sonarqube-project \
-                            -Dsonar.host.url=$SONAR_HOST_URL \
-                            -Dsonar.login=$SONAR_TOKEN
-                        """
-                    }
+                    // Coller le token créé depuis sonarqube project dans la commande de sonar
+                    sh 'mvn sonar:sonar -Dsonar.projectKey=bis-sonarqube-project -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=squ_12dc5303a322f735859acd7fab0615ba4c9df7d6'
                 }
             }
         }
 
+        //Dockériser l'application et faire en sortir une image de l'application avec docker build
         stage('Docker Build') {
             steps {
+                // Specifier un nom pour le build
                 sh 'docker build -t app:latest .'
             }
         }
@@ -44,10 +44,11 @@ pipeline {
 
     post {
         success {
-            echo '✅ Pipeline terminé avec succès.'
+            echo 'Pipeline terminé avec succès.'
         }
         failure {
-            echo '❌ Échec du pipeline.'
+            echo 'Échec du pipeline.'
         }
     }
 }
+
