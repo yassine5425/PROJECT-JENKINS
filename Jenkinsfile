@@ -21,7 +21,7 @@ pipeline {
             steps {
                 script {
                     // Cloner le dépôt Git à partir de la branche 'main'
-                    git url: 'https://<ton-dépôt-git-url>', branch: 'main'
+                    git url: 'https://github.com/yassine5425/PROJECT-JENKINS.git>', branch: 'main'
                 }
             }
         }
