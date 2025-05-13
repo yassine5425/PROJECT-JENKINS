@@ -23,8 +23,12 @@ pipeline {
                 withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_AUTH_TOKEN')]) {
                     withSonarQubeEnv('sonarqube') {
                         script {
-                            def scannerHome = tool 'SonarScanner' // Ce nom doit correspondre à l'outil défini dans "Global Tool Configuration"
-                            sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=projet-jenkins -Dsonar.sources=. -Dsonar.host.url=${env.SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN}"
+                            def scannerHome = tool 'SonarScanner'
+                            sh "${scannerHome}/bin/sonar-scanner \
+                                -Dsonar.projectKey=projet-jenkins \
+                                -Dsonar.sources=. \
+                                -Dsonar.host.url=${env.SONAR_HOST_URL} \
+                                -Dsonar.login=${SONAR_AUTH_TOKEN}"
                         }
                     }
                 }
